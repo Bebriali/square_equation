@@ -11,7 +11,7 @@ int main(){
     printf("square equation solver\n\n");
 
     double a = 0, b = 0, c = 0;
-    enter(&a, 'a');
+    enter(&a, 'a')
     enter(&b, 'b');
     enter(&c, 'c');
 
