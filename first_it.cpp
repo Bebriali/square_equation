@@ -16,6 +16,7 @@ const int    BUF_IS_DIRTY      =  0;
 const int    GOT_ONE_ARGUMENT  =  1;
 const int    TEST_SUCCESSFUL   =  1;
 const int    TEST_UNSUCCESSFUL =  0;
+const int    TESTS_QUANTITY     =  6;
 
 enum
 {
@@ -188,19 +189,23 @@ void auto_test()
 {
     printf("auto_testing:\n");
 
-    Mask_Coefs test1 = {.test_number = 1, .a = 1, .b = 2, .c = 1, .right_x1 = -1, .right_x2 = -1, .right_number_of_roots = 1};
-    Mask_Coefs test2 = {.test_number = 2, .a = 0, .b = 0, .c = 0, .right_x1 = 0, .right_x2 = 0, .right_number_of_roots = INF_NUMOF_ROOTS};
-    Mask_Coefs test3 = {.test_number = 3, .a = 1, .b = 4, .c = 3, .right_x1 = -1, .right_x2 = -3, .right_number_of_roots = 2};
-    Mask_Coefs test4 = {.test_number = 4, .a = 25.4343, .b = 89.3124, .c = -64.45, .right_x1 = 0.614195, .right_x2 = -4.12569, .right_number_of_roots = 2};
-    Mask_Coefs test5 = {.test_number = 5, .a = 273.1645424, .b = 13797.5455215, .c = -12514.64, .right_x1 = 0.891292, .right_x2 = -51.40131, .right_number_of_roots = 2};
-    Mask_Coefs test6 = {.test_number = 6, .a = 0, .b = 2.23432, .c = 0, .right_x1 = 0, .right_x2 = 0, .right_number_of_roots = 1};
+    struct Mask_Coefs tests[TESTS_QUANTITY];
 
-    test_coef(test1);
-    test_coef(test2);
-    test_coef(test3);
-    test_coef(test4);
-    test_coef(test5);
-    test_coef(test6);
+    tests[0] = {.test_number = 1, .a = 1, .b = 2, .c = 1, .right_x1 = -1, .right_x2 = -1, .right_number_of_roots = 1};
+    tests[1] = {.test_number = 2, .a = 0, .b = 0, .c = 0, .right_x1 = 0, .right_x2 = 0, .right_number_of_roots = INF_NUMOF_ROOTS};
+    tests[2] = {.test_number = 3, .a = 1, .b = 4, .c = 3, .right_x1 = -1, .right_x2 = -3, .right_number_of_roots = 2};
+    tests[3] = {.test_number = 4, .a = 25.4343, .b = 89.3124, .c = -64.45, .right_x1 = 0.614195, .right_x2 = -4.12569, .right_number_of_roots = 2};
+    tests[4] = {.test_number = 5, .a = 273.1645424, .b = 13797.5455215, .c = -12514.64, .right_x1 = 0.891292, .right_x2 = -51.40131, .right_number_of_roots = 2};
+    tests[5] = {.test_number = 6, .a = 0, .b = 2.23432, .c = 0, .right_x1 = 0, .right_x2 = 0, .right_number_of_roots = 1};
+
+    for (int i = 0; i < TESTS_QUANTITY; i++){
+        test_coef(tests[i]);
+    }
+//    test_coef(test2);
+//    test_coef(test3);
+//    test_coef(test4);
+//    test_coef(test5);
+//    test_coef(test6);
 }
 
 int test_coef(Mask_Coefs test){
