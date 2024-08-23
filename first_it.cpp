@@ -1,24 +1,32 @@
-#include <stdio.h>
-#include <math.h>
 #include <assert.h>
 #include <ctype.h>
+#include <math.h>
+#include <stdio.h>
 
-const int    TEST_WRONG      =  0;
-const double DELTA             =  0.00001;
-const int    INPUT_IS_WRONG    =  0;
-const int    INPUT_IS_OK       =  1;
-const int    SUCCESSFUL        =  1;
-const int    UNSUCCESSFUL      =  0;
-const int    IS_ZERO           =  0;
-const int    IS_NOT_ZERO       =  1;
-const int    BUF_IS_CLEAN      =  1;
-const int    BUF_IS_DIRTY      =  0;
+const int    TEST_WRONG        =  0;
+const double DELTA             =  1e-5;
 const int    GOT_ONE_ARGUMENT  =  1;
-const int    TEST_SUCCESSFUL   =  1;
-const int    TEST_UNSUCCESSFUL =  0;
-const int    TESTS_QUANTITY     =  6;
+const int    TESTS_QUANTITY    =  6;
 
-enum
+enum INPUT_STATUS
+{
+    INPUT_IS_WRONG,
+    INPUT_IS_OK
+};
+
+enum TEST_SUCCESS
+{
+    TEST_SUCCESSFUL,
+    TEST_UNSUCCESSFUL
+};
+
+enum BUFFER_STATUS
+{
+    BUF_IS_CLEAN = 1,
+    BUF_IS_DIRTY = 0
+};
+
+enum ROOTS_QUANTITY
 {
     INF_NUMOF_ROOTS = -1,
     NO_ROOTS,
@@ -28,7 +36,6 @@ enum
 
 struct Mask_Coefs
 {
-    int test_number;
     double a, b, c;
     double right_x1, right_x2;
     int right_number_of_roots;
@@ -41,7 +48,7 @@ void solve_equation(double a, double b, double c, double* x1, double* x2, int* n
 void filter_output(int n, double x1, double x2);
 
 void auto_test();
-int test_coef(Mask_Coefs test);
+void test_coef(int test_number, Mask_Coefs* test);
 
 int is_zero(double number);
 
@@ -84,13 +91,15 @@ void filter_input(double* coef_adress, char coef_name)
 
     printf("Enter coef %c: ", coef_name);
 
-    while (!isclean_input){
+    while (!isclean_input)
+    {
         isclean_input = INPUT_IS_OK;
 
-        while (scanf("%lf", coef_adress) != GOT_ONE_ARGUMENT) //first symbol is not a digit
+        while (scanf("%lf", coef_adress) != GOT_ONE_ARGUMENT) // first symbol is not a digit
         {
             clean_buf();
-            printf("\ninvalid input\nenter existing value of %c: ", coef_name);
+            printf("\ninvalid input\n"
+                   "enter existing value of %c: ", coef_name);
         }
 
         isclean_input = clean_buf();
@@ -153,7 +162,7 @@ void solve_equation(double a, double b, double c, double* x1, double* x2, int* n
         }
         else
         {
-            *number_of_roots = TWO_ROOTS;
+            *number_of_roots = TWO_ROOTS;        // todo temp var
             *x1 = (-b + sqrt(discriminant)) / (2 * a);
             *x2 = (-b - sqrt(discriminant)) / (2 * a);
         }
@@ -187,52 +196,40 @@ void filter_output(int number_of_roots, double x1, double x2)
 
 void auto_test()
 {
-    printf("auto_testing:\n");
+    printf("auto_testing:\n");             //   a               b               c           right_x1    right_x2    right_number_of_roots
 
-    struct Mask_Coefs tests[TESTS_QUANTITY];
+    struct Mask_Coefs tests[TESTS_QUANTITY] = {{1,              2,              1,         -1,         -1,          1},
+                                               {0,              0,              0,          0,          0,          INF_NUMOF_ROOTS},
+                                               {1,              4,              3,         -1,         -3,          2},
+                                               {25.4343,        89.3124,       -64.45,      0.614195,  -4.12569,    2},
+                                               {273.1645424,    13797.5455215, -12514.64,   0.891292,  -51.40131,   2},
+                                               {0,              2.23432,        0,          0,          0,          1}};
 
-    tests[0] = {.test_number = 1, .a = 1, .b = 2, .c = 1, .right_x1 = -1, .right_x2 = -1, .right_number_of_roots = 1};
-    tests[1] = {.test_number = 2, .a = 0, .b = 0, .c = 0, .right_x1 = 0, .right_x2 = 0, .right_number_of_roots = INF_NUMOF_ROOTS};
-    tests[2] = {.test_number = 3, .a = 1, .b = 4, .c = 3, .right_x1 = -1, .right_x2 = -3, .right_number_of_roots = 2};
-    tests[3] = {.test_number = 4, .a = 25.4343, .b = 89.3124, .c = -64.45, .right_x1 = 0.614195, .right_x2 = -4.12569, .right_number_of_roots = 2};
-    tests[4] = {.test_number = 5, .a = 273.1645424, .b = 13797.5455215, .c = -12514.64, .right_x1 = 0.891292, .right_x2 = -51.40131, .right_number_of_roots = 2};
-    tests[5] = {.test_number = 6, .a = 0, .b = 2.23432, .c = 0, .right_x1 = 0, .right_x2 = 0, .right_number_of_roots = 1};
 
-    for (int i = 0; i < TESTS_QUANTITY; i++){
-        test_coef(tests[i]);
+    for (int i = 0; i < TESTS_QUANTITY; i++)
+    {
+        test_coef(i, &tests[i]);
     }
-//    test_coef(test2);
-//    test_coef(test3);
-//    test_coef(test4);
-//    test_coef(test5);
-//    test_coef(test6);
 }
 
-int test_coef(Mask_Coefs test){
+void test_coef(int test_number, Mask_Coefs* test){
     double x1 = 0, x2 = 0;
     int number_of_roots = 0;
 
-    int test_success = SUCCESSFUL;
+    solve_equation(test->a, test->b, test->c, &x1, &x2, &number_of_roots);
 
-    solve_equation(test.a, test.b, test.c, &x1, &x2, &number_of_roots);
-
-    if (!is_zero(x1 - test.right_x1))
+    if (!is_zero(x1 - test->right_x1))
     {
-        printf("error in test %d (a = %lf; b = %lf; c = %lf): x1 = %lf, right_x1 = %lf\n", test.test_number, test.a, test.b, test.c, x1, test.right_x1);
-        test_success = UNSUCCESSFUL;
+        printf("error in test %d (a = %lf; b = %lf; c = %lf): x1 = %lf, right_x1 = %lf\n", test_number, test->a, test->b, test->c, x1, test->right_x1);
     }
-    if (!is_zero(x2 - test.right_x2))
+    if (!is_zero(x2 - test->right_x2))
     {
-        printf("error in test %d (a = %lf; b = %lf; c = %lf): x2 = %lf, right_x2 = %lf\n", test.test_number, test.a, test.b, test.c, x2, test.right_x2);
-        test_success = UNSUCCESSFUL;
+        printf("error in test %d (a = %lf; b = %lf; c = %lf): x2 = %lf, right_x2 = %lf\n", test_number, test->a, test->b, test->c, x2, test->right_x2);
     }
-    if (number_of_roots != test.right_number_of_roots)
+    if (number_of_roots != test->right_number_of_roots)
     {
-        printf("expected: %d root(s), got: %d root(s)\n", test.right_number_of_roots, number_of_roots);
-        test_success = UNSUCCESSFUL;
+        printf("expected: %d root(s), got: %d root(s)\n", test->right_number_of_roots, number_of_roots);
     }
-
-    return test_success;
 }
 
 int clean_buf()
@@ -242,8 +239,8 @@ int clean_buf()
     int is_clean_buf = BUF_IS_CLEAN;
 
     while ((c = getchar()) != '\n')
-    {
-        if (c != ' ' && c != '\t')
+    {                                  // todo isspace()
+        if (!isspace(c))
         {
             is_clean_buf = BUF_IS_DIRTY;
         }
